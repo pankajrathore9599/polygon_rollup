@@ -18,25 +18,30 @@ pub async fn start_client() -> Result<(), Box<dyn std::error::Error>> {
     let data = DataPacket {
         transactions: vec!["tx1".into(), "tx2".into(), "tx3".into(), "tx4".into()],
     };
-    
+
     let encoded_data = bincode::serialize(&data)?;
     
-    // Generate secret key and sign the data
     let signing_key = SigningKey::random(&mut OsRng);
     let verifying_key = VerifyingKey::from(&signing_key);
-        
-    // Serialize the public key and send it
+    
+    // Sending public key
     let encoded_point = verifying_key.to_encoded_point(false);
     stream.write_all(encoded_point.as_bytes()).await?;
+    println!("Public key sent: {:?}", encoded_point.as_bytes());
 
-    let signature: ecdsa::Signature = signing_key.sign(&encoded_data);
+    // Sending data
     stream.write_all(&encoded_data).await?;
-    stream.write_all(&signature.to_bytes()).await?;
+    println!("Data sent.");
 
+    // Sending signature
+    let signature: ecdsa::Signature = signing_key.sign(&encoded_data);
+    stream.write_all(&signature.to_bytes()).await?;
+    println!("Signature sent.");
+
+    // Reading server response
     let mut buffer = vec![0; 1024];
     stream.read(&mut buffer).await?;
-
-    println!("Received Merkle Root: {}", String::from_utf8_lossy(&buffer));
+    println!("Received Merkle Root: {:x?}", &buffer);
 
     Ok(())
 }
