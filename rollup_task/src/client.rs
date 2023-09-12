@@ -1,47 +1,26 @@
-use k256::ecdsa;
-use k256::ecdsa::{SigningKey, VerifyingKey, signature::Signer};
-use bincode;
+use crate::shared::Transaction;
 use tokio::net::TcpStream;
-use tokio::io::{AsyncWriteExt, AsyncReadExt};
-use rand::rngs::OsRng;
+use tokio::io::AsyncWriteExt;
+use bincode;
 
-#[derive(serde::Serialize, serde::Deserialize)]
-struct DataPacket {
-    transactions: Vec<String>,
+pub async fn send_transaction(transaction: Transaction) -> Result<(), Box<dyn std::error::Error>> {
+    println!("Preparing to send transaction to the aggregator...");
+    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
+    let encoded_data = bincode::serialize(&transaction)?;
+    stream.write_all(&encoded_data).await?;
+    println!("Transaction sent!");
+    Ok(())
 }
 
 pub async fn start_client() -> Result<(), Box<dyn std::error::Error>> {
-    println!("Connecting to server...");
-    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
-    println!("Connected to server");
-    
-    let data = DataPacket {
-        transactions: vec!["tx1".into(), "tx2".into(), "tx3".into(), "tx4".into()],
+    println!("Client started.");
+    let transaction = Transaction {
+        from: "Alice".to_string(),
+        to: "Bob".to_string(),
+        amount: 100,
+        nonce: 1,
+        timestamp: 1677567654,
     };
-
-    let encoded_data = bincode::serialize(&data)?;
-    
-    let signing_key = SigningKey::random(&mut OsRng);
-    let verifying_key = VerifyingKey::from(&signing_key);
-    
-    // Sending public key
-    let encoded_point = verifying_key.to_encoded_point(false);
-    stream.write_all(encoded_point.as_bytes()).await?;
-    println!("Public key sent: {:?}", encoded_point.as_bytes());
-
-    // Sending data
-    stream.write_all(&encoded_data).await?;
-    println!("Data sent.");
-
-    // Sending signature
-    let signature: ecdsa::Signature = signing_key.sign(&encoded_data);
-    stream.write_all(&signature.to_bytes()).await?;
-    println!("Signature sent.");
-
-    // Reading server response
-    let mut buffer = vec![0; 1024];
-    stream.read(&mut buffer).await?;
-    println!("Received Merkle Root: {:x?}", &buffer);
-
+    send_transaction(transaction).await?;
     Ok(())
 }
