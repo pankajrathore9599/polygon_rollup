@@ -39,7 +39,7 @@ async fn handle_client(mut socket: TcpStream, collected_transactions: &mut VecDe
     // Print the number of received transactions
     println!("Received {} Transaction(s).", collected_transactions.len());
 
-    // Print the received transaction details with the 'from' field in base58
+    // Print the received transaction details.
     println!("Received Transaction Details:");
     println!("From (Base58): {:?}", bs58::encode(&signed_transaction.transaction.from).into_string());
     println!("To: {:?}", signed_transaction.transaction.to);
