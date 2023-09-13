@@ -1,54 +1,64 @@
-# polygon_rollup_test
+# Polygon Rollup Transaction Simulation.
 
-Certainly! I assume you're aiming for a more complete demonstration of a rollup process. Below is a brief description of a rollup system followed by an example that mimics a simplified rollup process:
+This project is a simulation of a simple blockchain-based transaction system. It consists of three main components: `Client`, `Aggregator`, and `Main Chain`. The client generates transactions, the aggregator collects and validates transactions, and the main chain records the transactions as blocks in the blockchain.
 
-**Rollup Description**:
-Rollups are a layer 2 scaling solution that helps to increase the throughput of a blockchain by processing transactions off-chain and then committing a summary to the main chain. This reduces the amount of data stored on the main chain. There are two primary types of rollups: zk-rollups and optimistic rollups. Both use different mechanisms to validate the correctness of off-chain transactions, but the underlying idea is the same.
+## Table of Contents.
 
-A simple rollup system typically involves:
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#usage)
+- [Components](#components)
+  - [Client](#client)
+  - [Aggregator](#aggregator)
+  - [Main Chain](#main-chain)
 
-1. **Users**: Send transactions to a rollup aggregator.
-2. **Aggregator(client.rs)**: Collects multiple transactions, processes them off-chain, and then creates a rollup (summary) which is committed to the main chain.
-3. **Validators(server.rs)**: Ensure that the rollup is correct (this varies based on the type of rollup, e.g., zk proofs for zk-rollups and fraud proofs for optimistic rollups).
+## Project Structure.
 
-**Simplified Rollup Console Example**:
+The project is organized into three main components:
 
-```bash
-$ cargo run aggregator
-   Compiling rollup_task v0.1.0 (/Users/pankajrathore/Desktop/Github/polygon_rollup_test/rollup_task)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.65s
-     Running `target/debug/rollup_task aggregator`
-Starting rollup aggregator...
+- `client`: Simulates transaction generation and sends transactions to the aggregator.
+- `aggregator`: Collects and validates transactions before sending them to the main chain.
+- `main_chain`: Records transactions as blocks in the blockchain.
 
-$ cargo run client
-   Compiling rollup_task v0.1.0 (/Users/pankajrathore/Desktop/Github/polygon_rollup_test/rollup_task)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.64s
-     Running `target/debug/rollup_task client`
-Sending transaction to aggregator...
-Transaction hash: 0x12345abcde
+## Getting Started.
 
-$ cargo run client
-   Running `target/debug/rollup_task client`
-Sending another transaction to aggregator...
-Transaction hash: 0x67890fghij
+### Prerequisites.
 
-$ cargo run aggregator
-Collecting transactions...
-Creating rollup...
-Rollup hash: 0xabcdef98765
-Sending rollup to main chain...
+Before running this project, make sure you have the following installed:
 
-$ cargo run main_chain
-   Running `target/debug/rollup_task main_chain`
-Received rollup. Validating...
-Rollup is valid. Committing to main chain.
-```
+- Rust (https://www.rust-lang.org/tools/install)
+- Install Cargo
 
-This example showcases:
 
-1. An aggregator collecting transactions.
-2. Users (clients) sending transactions to the aggregator.
-3. The aggregator creating a rollup and sending it to the main chain.
-4. The main chain receiving and validating the rollup.
+### Setting up the project.
+- Clone this repository.
+- Navigate the repo.
+- Install all the crates using ```cargo build``` in repo directory.
 
-Note: This is a highly simplified representation, and a real-world rollup would involve cryptographic proofs, validation mechanisms, and more complexity in terms of transaction structure and processing.
+### Usage.
+To simulate a blockchain-based transaction system, follow these steps:
+
+1. Start the Main Chain Componet:
+```cargo run main_chain``` from root directory. 
+
+2. Start the Aggregator Component:
+```cargo run aggregator``` from root directory.
+
+These above 2 components with continously run and in sync with together now we have to send some trasactions to aggregator.
+
+3. Run the Client Component for sending transaction everytime.
+```cargo run client``` from root directory. {If you run one time the one trasaction will send.}
+Note: The client sends one transaction each time you run it. To create a Rollup, the aggregator needs five transactions to send to the main chain.
+
+## Components.
+
+### Client
+The Client component generates random transactions and sends them to the Aggregator. Each transaction includes sender and receiver information, an amount, a nonce, and a timestamp.
+
+### Aggregator
+The Aggregator collects incoming transactions from the Client, validates them, and forwards valid transactions to the Main Chain for recording. It performs basic checks such as signature verification and timestamp validation.
+
+### Main Chain
+The Main Chain records valid transactions as blocks in the blockchain. Each block contains multiple transactions and ensures the immutability and integrity of the transaction history. Every Rollup adds data to the Merkle tree for efficient verification.
